@@ -22,10 +22,11 @@ import {
   ArrowRight,
   Camera,
   Send,
-  Navigation as NavigationIcon
+  Navigation as NavigationIcon,
+  LogOut
 } from 'lucide-react';
 import { Job, ViewState, TabState, UserProfile, Application, UserRole, Experience, Message } from './types';
-import { MOCK_JOBS, CATEGORIES, THEME } from './constants';
+import { MOCK_JOBS, CATEGORIES, THEME, MOCK_CANDIDATES } from './constants';
 
 // --- Components ---
 
@@ -502,7 +503,7 @@ const PostJobForm: React.FC<{ onBack: () => void; onSubmit: (job: any) => void }
   );
 };
 
-const EmployerDashboard = ({ jobs, applications, onPostJob, showToast }: { jobs: Job[]; applications: Application[]; onPostJob: () => void; showToast: (msg: string) => void }) => {
+const EmployerDashboard = ({ jobs, applications, onPostJob, showToast, onChat }: { jobs: Job[]; applications: Application[]; onPostJob: () => void; showToast: (msg: string) => void; onChat: () => void }) => {
   return (
     <div className="space-y-8">
       <div className="bg-navy p-6 rounded-3xl text-white relative overflow-hidden">
@@ -576,15 +577,26 @@ const EmployerDashboard = ({ jobs, applications, onPostJob, showToast }: { jobs:
                         <h4 className="font-bold text-navy text-sm">Kandidat #{i+100}</h4>
                         <p className="text-slate-400 text-xs">UI/UX Designer • 2th Pengalaman</p>
                       </div>
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          showToast('Kandidat berhasil diterima!');
-                        }}
-                        className="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors"
-                      >
-                        <CheckCircle className="w-5 h-5" />
-                      </button>
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onChat();
+                          }}
+                          className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                        >
+                          <MessageSquare className="w-5 h-5" />
+                        </button>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            showToast('Kandidat berhasil diterima!');
+                          }}
+                          className="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors"
+                        >
+                          <CheckCircle className="w-5 h-5" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -919,6 +931,7 @@ export default function App() {
   const [toast, setToast] = useState<string | null>(null);
   const [editingExperience, setEditingExperience] = useState<Experience | null>(null);
   const [locationSearch, setLocationSearch] = useState('');
+  const [candidateSearch, setCandidateSearch] = useState('');
 
   const [messages, setMessages] = useState<Message[]>([
     { id: '1', sender: 'HR PT Maju', text: 'Halo, apakah besok bisa interview?', time: '10:30', isMe: false },
@@ -974,7 +987,7 @@ export default function App() {
     }
 
     if (user.role === 'employer' || userData.role === 'employer') {
-      setActiveTab('employer-dashboard');
+      setActiveTab('home');
     }
   };
 
@@ -994,8 +1007,9 @@ export default function App() {
       postedAt: 'Baru saja'
     };
     setJobs([newJob, ...jobs]);
+    showToast('Lowongan berhasil dipasang!');
     setView('main');
-    setActiveTab('employer-dashboard');
+    setActiveTab('home');
   };
 
   const handleApply = (jobToApply?: Job) => {
@@ -1309,13 +1323,167 @@ export default function App() {
 
             {/* Content based on Tab */}
             <main className="p-6">
-              {user.role === 'employer' && activeTab === 'employer-dashboard' ? (
-                <EmployerDashboard 
-                  jobs={jobs.filter(j => j.company === user.name || j.postedAt === 'Baru saja')} 
-                  applications={applications} 
-                  onPostJob={() => setView('post-job')}
-                  showToast={showToast}
-                />
+              {user.role === 'employer' ? (
+                <>
+                  {(activeTab === 'home' || activeTab === 'applications' || activeTab === 'employer-dashboard') && (
+                    <EmployerDashboard 
+                      jobs={jobs.filter(j => j.company === user.name || j.postedAt === 'Baru saja')} 
+                      applications={applications} 
+                      onPostJob={() => setView('post-job')}
+                      showToast={showToast}
+                      onChat={() => setView('chat')}
+                    />
+                  )}
+                  {activeTab === 'explore' && (
+                    <div>
+                      <div className="relative mb-8">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                        <input 
+                          type="text" 
+                          value={candidateSearch}
+                          onChange={(e) => setCandidateSearch(e.target.value)}
+                          placeholder="Cari kandidat (misal: Frontend Developer)..."
+                          className="w-full pl-12 pr-4 py-4 bg-white rounded-2xl border border-slate-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-navy/5"
+                        />
+                      </div>
+
+                      <section className="mb-8">
+                        <h3 className="font-bold text-navy mb-4">Kategori Kandidat</h3>
+                        <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
+                          {CATEGORIES.map(cat => (
+                            <button 
+                              key={cat.id} 
+                              onClick={() => {
+                                setCandidateSearch(cat.name);
+                                showToast(`Mencari kandidat kategori: ${cat.name}`);
+                              }}
+                              className={`flex-shrink-0 px-6 py-3 rounded-xl border border-slate-100 shadow-sm font-medium flex items-center gap-2 transition-all ${
+                                candidateSearch === cat.name ? 'bg-navy text-white border-navy' : 'bg-white text-slate-600 hover:border-navy/20'
+                              }`}
+                            >
+                              <span>{cat.icon}</span> {cat.name}
+                            </button>
+                          ))}
+                        </div>
+                      </section>
+
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="font-bold text-navy">
+                          {candidateSearch ? `Hasil Pencarian: ${candidateSearch}` : 'Kandidat Unggulan'}
+                        </h3>
+                        {candidateSearch && (
+                          <button 
+                            onClick={() => setCandidateSearch('')}
+                            className="text-navy text-xs font-bold"
+                          >
+                            Reset
+                          </button>
+                        )}
+                      </div>
+                      
+                      <div className="space-y-4">
+                        {MOCK_CANDIDATES.filter(c => 
+                          !candidateSearch || 
+                          c.name.toLowerCase().includes(candidateSearch.toLowerCase()) || 
+                          c.title.toLowerCase().includes(candidateSearch.toLowerCase()) ||
+                          c.skills.some(s => s.toLowerCase().includes(candidateSearch.toLowerCase()))
+                        ).map(candidate => (
+                          <div 
+                            key={candidate.id} 
+                            onClick={() => showToast(`Membuka profil: ${candidate.name}`)}
+                            className="bg-white p-4 rounded-2xl border border-slate-100 flex gap-4 items-center cursor-pointer hover:border-navy/20 transition-all shadow-sm"
+                          >
+                            <img src={candidate.avatar} className="w-14 h-14 rounded-full border-2 border-slate-50" referrerPolicy="no-referrer" />
+                            <div className="flex-1">
+                              <h4 className="font-bold text-navy text-sm">{candidate.name}</h4>
+                              <p className="text-slate-500 text-xs font-medium">{candidate.title}</p>
+                              <div className="flex gap-1 mt-1">
+                                {candidate.skills.slice(0, 2).map(skill => (
+                                  <span key={skill} className="text-[9px] bg-slate-50 text-slate-400 px-2 py-0.5 rounded-full border border-slate-100 font-bold uppercase">{skill}</span>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setView('chat');
+                                }}
+                                className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                              >
+                                <MessageSquare className="w-5 h-5" />
+                              </button>
+                              <div className="text-right">
+                                <p className="text-navy font-bold text-xs">{candidate.experience}</p>
+                                <p className="text-[10px] text-slate-400">{candidate.location}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        {MOCK_CANDIDATES.filter(c => 
+                          !candidateSearch || 
+                          c.name.toLowerCase().includes(candidateSearch.toLowerCase()) || 
+                          c.title.toLowerCase().includes(candidateSearch.toLowerCase()) ||
+                          c.skills.some(s => s.toLowerCase().includes(candidateSearch.toLowerCase()))
+                        ).length === 0 && (
+                          <div className="text-center py-12 bg-white rounded-3xl border border-dashed border-slate-200">
+                            <p className="text-slate-400 text-sm">Tidak ada kandidat yang cocok.</p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="mt-8 bg-navy p-6 rounded-3xl text-white relative overflow-hidden">
+                        <div className="relative z-10">
+                          <h3 className="font-bold text-lg mb-2">Butuh bantuan mencari?</h3>
+                          <p className="text-sm opacity-80 mb-4">Gunakan filter lanjutan untuk menemukan kandidat yang tepat.</p>
+                          <button className="w-full py-3 bg-yellow text-navy rounded-xl font-bold flex items-center justify-center gap-2">
+                            <Filter className="w-4 h-4" /> Filter Kandidat
+                          </button>
+                        </div>
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+                      </div>
+                    </div>
+                  )}
+                  {activeTab === 'profile' && (
+                    <div className="pb-8">
+                      <div className="flex flex-col items-center mb-8">
+                        <div className="relative">
+                          <div className="w-24 h-24 rounded-full border-4 border-yellow p-1">
+                            <img 
+                              src={`https://picsum.photos/seed/${user.name || 'user1'}/200/200`} 
+                              className="w-full h-full rounded-full object-cover" 
+                              referrerPolicy="no-referrer"
+                            />
+                          </div>
+                        </div>
+                        <h2 className="text-xl font-bold text-navy mt-4">{user.name}</h2>
+                        <p className="text-slate-500 text-sm">Employer Account</p>
+                        
+                        <div className="mt-6 flex flex-col gap-3 w-full">
+                          <button 
+                            onClick={toggleRole}
+                            className="w-full px-4 py-3 bg-navy/5 text-navy rounded-xl text-xs font-bold border border-navy/10 flex items-center justify-center gap-2"
+                          >
+                            <Briefcase className="w-3 h-3" /> 
+                            Pindah ke Mode Pelamar
+                          </button>
+                          
+                          <button 
+                            onClick={() => {
+                              setUser({ ...user, isLoggedIn: false });
+                              setView('role-selection');
+                              showToast('Berhasil keluar dari akun');
+                            }}
+                            className="w-full px-4 py-3 bg-red-50 text-red-600 rounded-xl text-xs font-bold border border-red-100 flex items-center justify-center gap-2"
+                          >
+                            <LogOut className="w-3 h-3" /> 
+                            Keluar dari Akun
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
               ) : (
                 <>
                   {activeTab === 'home' && (
@@ -1381,107 +1549,178 @@ export default function App() {
 
                    {activeTab === 'explore' && (
                     <div>
-                      <div className="relative mb-8">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-                        <input 
-                          type="text" 
-                          placeholder="Cari posisi atau perusahaan..."
-                          className="w-full pl-12 pr-4 py-4 bg-white rounded-2xl border border-slate-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-navy/5"
-                        />
-                      </div>
+                      {user.role === 'employer' ? (
+                        <div>
+                          <div className="relative mb-8">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                            <input 
+                              type="text" 
+                              placeholder="Cari kandidat (misal: Frontend Developer)..."
+                              className="w-full pl-12 pr-4 py-4 bg-white rounded-2xl border border-slate-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-navy/5"
+                            />
+                          </div>
 
-                      <section className="mb-8">
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="font-bold text-navy">Cari Lokasi di Peta</h3>
-                          <button 
-                            onClick={refreshLocation}
-                            className="text-[10px] font-bold text-navy bg-yellow px-2 py-1 rounded-lg flex items-center gap-1"
-                          >
-                            <NavigationIcon className="w-3 h-3" /> GPS SAYA
-                          </button>
-                        </div>
-                        <div className="relative">
-                          <input 
-                            type="text" 
-                            value={locationSearch}
-                            onChange={(e) => setLocationSearch(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' && locationSearch) {
-                                window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationSearch)}`, '_blank');
-                              }
-                            }}
-                            placeholder="Ketik kota atau daerah (misal: Bandung)..."
-                            className="w-full pl-4 pr-12 py-4 bg-slate-50 rounded-2xl border border-slate-100 focus:outline-none focus:ring-2 focus:ring-navy/10"
-                          />
-                          <button 
-                            onClick={() => {
-                              if (locationSearch) {
-                                window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationSearch)}`, '_blank');
-                              } else {
-                                showToast('Ketik lokasi terlebih dahulu');
-                              }
-                            }}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-navy text-white rounded-xl hover:bg-navy/90 transition-all"
-                          >
-                            <Search className="w-4 h-4" />
-                          </button>
-                        </div>
-                        <div className="flex gap-2 mt-3 overflow-x-auto pb-2 no-scrollbar">
-                          {['Jakarta', 'Bandung', 'Surabaya', 'Medan', 'Bali'].map(city => (
-                            <button 
-                              key={city}
-                              onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(city)}`, '_blank')}
-                              className="px-4 py-2 bg-white border border-slate-100 rounded-full text-xs font-bold text-slate-500 hover:border-navy/20 transition-all whitespace-nowrap"
-                            >
-                              {city}
-                            </button>
-                          ))}
-                        </div>
-                      </section>
-
-                      <h3 className="font-bold text-navy mb-4">Kategori Populer</h3>
-                      <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
-                        {CATEGORIES.map(cat => (
-                          <button 
-                            key={cat.id} 
-                            onClick={() => showToast(`Mencari kategori: ${cat.name}`)}
-                            className="flex-shrink-0 px-6 py-3 bg-white rounded-xl border border-slate-100 shadow-sm font-medium text-slate-600 flex items-center gap-2 hover:border-navy/20 transition-all"
-                          >
-                            <span>{cat.icon}</span> {cat.name}
-                          </button>
-                        ))}
-                      </div>
-
-                      <div className="mt-8">
-                        <div className="flex justify-between items-center mb-4">
-                          <h3 className="font-bold text-navy">Loker Terdekat</h3>
-                          <button 
-                            onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=lowongan+kerja+terdekat`, '_blank')}
-                            className="text-navy text-sm font-bold hover:underline flex items-center gap-1"
-                          >
-                            <MapPin className="w-4 h-4" /> Lihat Peta
-                          </button>
-                        </div>
-                        <div className="space-y-4">
-                          {MOCK_JOBS.map(job => (
-                            <div 
-                              key={job.id} 
-                              onClick={() => openDetail(job)}
-                              className="bg-white p-4 rounded-2xl border border-slate-100 flex gap-4 items-center cursor-pointer hover:border-navy/20 transition-all"
-                            >
-                              <img src={job.logo} className="w-12 h-12 rounded-xl" referrerPolicy="no-referrer" />
-                              <div className="flex-1">
-                                <h4 className="font-bold text-navy text-sm">{job.title}</h4>
-                                <p className="text-slate-400 text-xs">{job.company} • {job.location}</p>
-                              </div>
-                              <div className="text-right">
-                                <p className="text-navy font-bold text-xs">{job.salary.split(' - ')[0]}</p>
-                                <p className="text-[10px] text-slate-400">{job.postedAt}</p>
-                              </div>
+                          <section className="mb-8">
+                            <h3 className="font-bold text-navy mb-4">Kategori Kandidat</h3>
+                            <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
+                              {CATEGORIES.map(cat => (
+                                <button 
+                                  key={cat.id} 
+                                  onClick={() => showToast(`Mencari kandidat kategori: ${cat.name}`)}
+                                  className="flex-shrink-0 px-6 py-3 bg-white rounded-xl border border-slate-100 shadow-sm font-medium text-slate-600 flex items-center gap-2 hover:border-navy/20 transition-all"
+                                >
+                                  <span>{cat.icon}</span> {cat.name}
+                                </button>
+                              ))}
                             </div>
-                          ))}
+                          </section>
+
+                          <div className="flex justify-between items-center mb-4">
+                            <h3 className="font-bold text-navy">Kandidat Unggulan</h3>
+                            <button className="text-navy text-sm font-bold hover:underline">Lihat Semua</button>
+                          </div>
+                          
+                          <div className="space-y-4">
+                            {MOCK_CANDIDATES.map(candidate => (
+                              <div 
+                                key={candidate.id} 
+                                onClick={() => showToast(`Membuka profil: ${candidate.name}`)}
+                                className="bg-white p-4 rounded-2xl border border-slate-100 flex gap-4 items-center cursor-pointer hover:border-navy/20 transition-all shadow-sm"
+                              >
+                                <img src={candidate.avatar} className="w-14 h-14 rounded-full border-2 border-slate-50" referrerPolicy="no-referrer" />
+                                <div className="flex-1">
+                                  <h4 className="font-bold text-navy text-sm">{candidate.name}</h4>
+                                  <p className="text-slate-500 text-xs font-medium">{candidate.title}</p>
+                                  <div className="flex gap-1 mt-1">
+                                    {candidate.skills.slice(0, 2).map(skill => (
+                                      <span key={skill} className="text-[9px] bg-slate-50 text-slate-400 px-2 py-0.5 rounded-full border border-slate-100 font-bold uppercase">{skill}</span>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-navy font-bold text-xs">{candidate.experience}</p>
+                                  <p className="text-[10px] text-slate-400">{candidate.location}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="mt-8 bg-navy p-6 rounded-3xl text-white relative overflow-hidden">
+                            <div className="relative z-10">
+                              <h3 className="font-bold text-lg mb-2">Butuh bantuan mencari?</h3>
+                              <p className="text-sm opacity-80 mb-4">Gunakan filter lanjutan untuk menemukan kandidat yang tepat.</p>
+                              <button className="w-full py-3 bg-yellow text-navy rounded-xl font-bold flex items-center justify-center gap-2">
+                                <Filter className="w-4 h-4" /> Filter Kandidat
+                              </button>
+                            </div>
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+                          </div>
                         </div>
-                      </div>
+                      ) : (
+                        <div>
+                          <div className="relative mb-8">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                            <input 
+                              type="text" 
+                              placeholder="Cari posisi atau perusahaan..."
+                              className="w-full pl-12 pr-4 py-4 bg-white rounded-2xl border border-slate-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-navy/5"
+                            />
+                          </div>
+
+                          <section className="mb-8">
+                            <div className="flex items-center justify-between mb-4">
+                              <h3 className="font-bold text-navy">Cari Lokasi di Peta</h3>
+                              <button 
+                                onClick={refreshLocation}
+                                className="text-[10px] font-bold text-navy bg-yellow px-2 py-1 rounded-lg flex items-center gap-1"
+                              >
+                                <NavigationIcon className="w-3 h-3" /> GPS SAYA
+                              </button>
+                            </div>
+                            <div className="relative">
+                              <input 
+                                type="text" 
+                                value={locationSearch}
+                                onChange={(e) => setLocationSearch(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' && locationSearch) {
+                                    window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationSearch)}`, '_blank');
+                                  }
+                                }}
+                                placeholder="Ketik kota atau daerah (misal: Bandung)..."
+                                className="w-full pl-4 pr-12 py-4 bg-slate-50 rounded-2xl border border-slate-100 focus:outline-none focus:ring-2 focus:ring-navy/10"
+                              />
+                              <button 
+                                onClick={() => {
+                                  if (locationSearch) {
+                                    window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationSearch)}`, '_blank');
+                                  } else {
+                                    showToast('Ketik lokasi terlebih dahulu');
+                                  }
+                                }}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-navy text-white rounded-xl hover:bg-navy/90 transition-all"
+                              >
+                                <Search className="w-4 h-4" />
+                              </button>
+                            </div>
+                            <div className="flex gap-2 mt-3 overflow-x-auto pb-2 no-scrollbar">
+                              {['Jakarta', 'Bandung', 'Surabaya', 'Medan', 'Bali'].map(city => (
+                                <button 
+                                  key={city}
+                                  onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(city)}`, '_blank')}
+                                  className="px-4 py-2 bg-white border border-slate-100 rounded-full text-xs font-bold text-slate-500 hover:border-navy/20 transition-all whitespace-nowrap"
+                                >
+                                  {city}
+                                </button>
+                              ))}
+                            </div>
+                          </section>
+
+                          <h3 className="font-bold text-navy mb-4">Kategori Populer</h3>
+                          <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
+                            {CATEGORIES.map(cat => (
+                              <button 
+                                key={cat.id} 
+                                onClick={() => showToast(`Mencari kategori: ${cat.name}`)}
+                                className="flex-shrink-0 px-6 py-3 bg-white rounded-xl border border-slate-100 shadow-sm font-medium text-slate-600 flex items-center gap-2 hover:border-navy/20 transition-all"
+                              >
+                                <span>{cat.icon}</span> {cat.name}
+                              </button>
+                            ))}
+                          </div>
+
+                          <div className="mt-8">
+                            <div className="flex justify-between items-center mb-4">
+                              <h3 className="font-bold text-navy">Loker Terdekat</h3>
+                              <button 
+                                onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=lowongan+kerja+terdekat`, '_blank')}
+                                className="text-navy text-sm font-bold hover:underline flex items-center gap-1"
+                              >
+                                <MapPin className="w-4 h-4" /> Lihat Peta
+                              </button>
+                            </div>
+                            <div className="space-y-4">
+                              {MOCK_JOBS.map(job => (
+                                <div 
+                                  key={job.id} 
+                                  onClick={() => openDetail(job)}
+                                  className="bg-white p-4 rounded-2xl border border-slate-100 flex gap-4 items-center cursor-pointer hover:border-navy/20 transition-all"
+                                >
+                                  <img src={job.logo} className="w-12 h-12 rounded-xl" referrerPolicy="no-referrer" />
+                                  <div className="flex-1">
+                                    <h4 className="font-bold text-navy text-sm">{job.title}</h4>
+                                    <p className="text-slate-400 text-xs">{job.company} • {job.location}</p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-navy font-bold text-xs">{job.salary.split(' - ')[0]}</p>
+                                    <p className="text-[10px] text-slate-400">{job.postedAt}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -1564,18 +1803,19 @@ export default function App() {
                           className="mt-4 px-4 py-2 bg-navy/5 text-navy rounded-xl text-xs font-bold border border-navy/10 flex items-center gap-2"
                         >
                           <Briefcase className="w-3 h-3" /> 
-                          Pindah ke Mode {user.role === 'applicant' ? 'Employer' : 'Pelamar'}
+                          Pindah ke Mode Employer
                         </button>
 
                         <button 
                           onClick={() => {
                             setUser({ ...user, isLoggedIn: false });
                             setView('role-selection');
+                            showToast('Berhasil keluar dari akun');
                           }}
-                          className="mt-2 px-4 py-2 text-slate-400 rounded-xl text-xs font-bold hover:text-navy transition-colors flex items-center gap-2"
+                          className="mt-2 px-4 py-2 bg-red-50 text-red-600 rounded-xl text-xs font-bold border border-red-100 flex items-center gap-2"
                         >
-                          <ChevronRight className="w-3 h-3 rotate-180" /> 
-                          Kembali ke Pemilihan Peran
+                          <LogOut className="w-3 h-3" /> 
+                          Keluar dari Akun
                         </button>
                       </div>
 
@@ -1669,11 +1909,7 @@ export default function App() {
             <Navigation 
               activeTab={activeTab} 
               setActiveTab={(tab) => {
-                if (user.role === 'employer' && tab !== 'profile') {
-                  setActiveTab('employer-dashboard');
-                } else {
-                  setActiveTab(tab);
-                }
+                setActiveTab(tab);
               }} 
             />
           </motion.div>

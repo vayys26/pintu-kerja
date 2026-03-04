@@ -78,3 +78,46 @@ export const THEME = {
   white: '#FFFFFF',
   gray: '#F5F5F5',
 };
+
+export const MOCK_CANDIDATES = [
+  {
+    id: 'c1',
+    name: 'Andi Wijaya',
+    title: 'Senior Frontend Developer',
+    location: 'Jakarta',
+    skills: ['React', 'TypeScript', 'Tailwind'],
+    experience: '5 tahun',
+    bio: 'Berpengalaman membangun aplikasi web skala besar.',
+    avatar: 'https://picsum.photos/seed/andi/100/100'
+  },
+  {
+    id: 'c2',
+    name: 'Siti Aminah',
+    title: 'UI/UX Designer',
+    location: 'Bandung',
+    skills: ['Figma', 'Adobe XD', 'User Research'],
+    experience: '3 tahun',
+    bio: 'Fokus pada desain yang berpusat pada pengguna.',
+    avatar: 'https://picsum.photos/seed/siti/100/100'
+  },
+  {
+    id: 'c3',
+    name: 'Budi Santoso',
+    title: 'Backend Engineer',
+    location: 'Surabaya',
+    skills: ['Node.js', 'PostgreSQL', 'Docker'],
+    experience: '4 tahun',
+    bio: 'Ahli dalam membangun API yang efisien.',
+    avatar: 'https://picsum.photos/seed/budi/100/100'
+  },
+  {
+    id: 'c4',
+    name: 'Dewi Lestari',
+    title: 'Digital Marketer',
+    location: 'Jakarta',
+    skills: ['SEO', 'SEM', 'Content Strategy'],
+    experience: '2 tahun',
+    bio: 'Membantu bisnis tumbuh melalui strategi digital.',
+    avatar: 'https://picsum.photos/seed/dewi/100/100'
+  }
+];
