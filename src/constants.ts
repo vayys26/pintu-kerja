@@ -1,0 +1,80 @@
+import { Job } from './types';
+
+export const MOCK_JOBS: Job[] = [
+  {
+    id: '1',
+    title: 'Frontend Developer',
+    company: 'TechNova Solutions',
+    location: 'Jakarta (Remote)',
+    coordinates: { lat: -6.2088, lng: 106.8456 },
+    salary: 'Rp 12.000.000 - 18.000.000',
+    type: 'Full-time',
+    category: 'Tech',
+    description: 'Kami mencari pengembang frontend berbakat yang mahir dalam React dan Tailwind CSS untuk membangun antarmuka pengguna yang luar biasa.',
+    requirements: ['React.js', 'TypeScript', 'Tailwind CSS', '3+ tahun pengalaman'],
+    logo: 'https://picsum.photos/seed/tech1/100/100',
+    verified: true,
+    postedAt: '2 jam yang lalu',
+  },
+  {
+    id: '2',
+    title: 'Digital Marketing Specialist',
+    company: 'CreativeEdge Agency',
+    location: 'Bandung',
+    coordinates: { lat: -6.9175, lng: 107.6191 },
+    salary: 'Rp 8.000.000 - 12.000.000',
+    type: 'Full-time',
+    category: 'Marketing',
+    description: 'Bergabunglah dengan tim kreatif kami untuk mengelola kampanye media sosial dan strategi SEO untuk klien global.',
+    requirements: ['SEO/SEM', 'Content Strategy', 'Google Analytics', 'Komunikasi yang baik'],
+    logo: 'https://picsum.photos/seed/market1/100/100',
+    verified: true,
+    postedAt: '5 jam yang lalu',
+  },
+  {
+    id: '3',
+    title: 'UI/UX Designer',
+    company: 'PixelPerfect Studio',
+    location: 'Yogyakarta',
+    coordinates: { lat: -7.7956, lng: 110.3695 },
+    salary: 'Rp 7.000.000 - 11.000.000',
+    type: 'Freelance',
+    category: 'Art',
+    description: 'Mendesain pengalaman pengguna yang intuitif dan visual yang memukau untuk aplikasi mobile dan web.',
+    requirements: ['Figma', 'Adobe XD', 'User Research', 'Prototyping'],
+    logo: 'https://picsum.photos/seed/art1/100/100',
+    verified: true,
+    postedAt: '1 hari yang lalu',
+  },
+  {
+    id: '4',
+    title: 'Backend Engineer (Go)',
+    company: 'DataStream Systems',
+    location: 'Jakarta',
+    coordinates: { lat: -6.1751, lng: 106.8272 },
+    salary: 'Rp 15.000.000 - 25.000.000',
+    type: 'Full-time',
+    category: 'Tech',
+    description: 'Membangun infrastruktur backend yang skalabel dan efisien menggunakan bahasa pemrograman Go.',
+    requirements: ['Golang', 'PostgreSQL', 'Microservices', 'Docker'],
+    logo: 'https://picsum.photos/seed/tech2/100/100',
+    verified: true,
+    postedAt: '3 jam yang lalu',
+  }
+];
+
+export const CATEGORIES = [
+  { id: 'tech', name: 'Technology', icon: '💻' },
+  { id: 'marketing', name: 'Marketing', icon: '📈' },
+  { id: 'art', name: 'Art & Design', icon: '🎨' },
+  { id: 'finance', name: 'Finance', icon: '💰' },
+  { id: 'health', name: 'Healthcare', icon: '🏥' },
+  { id: 'edu', name: 'Education', icon: '🎓' },
+];
+
+export const THEME = {
+  navy: '#1A237E',
+  yellow: '#FFD600',
+  white: '#FFFFFF',
+  gray: '#F5F5F5',
+};

@@ -1,0 +1,9 @@
+{
+  "name": "PINTU KERJA",
+  "description": "Platform lowongan kerja cerdas dengan teknologi pencocokan berbasis AI, video introduction, dan verifikasi instansi ketat untuk menjembatani pencari kerja dan pemberi kerja secara efisien.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}
