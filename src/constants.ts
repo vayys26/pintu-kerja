@@ -73,7 +73,7 @@ export const CATEGORIES = [
 ];
 
 export const THEME = {
-  navy: '#1A237E',
+  navy: '#0EA5E9',
   yellow: '#FFD600',
   white: '#FFFFFF',
   gray: '#F5F5F5',
@@ -88,7 +88,8 @@ export const MOCK_CANDIDATES = [
     skills: ['React', 'TypeScript', 'Tailwind'],
     experience: '5 tahun',
     bio: 'Berpengalaman membangun aplikasi web skala besar.',
-    avatar: 'https://picsum.photos/seed/andi/100/100'
+    avatar: 'https://picsum.photos/seed/andi/100/100',
+    category: 'tech'
   },
   {
     id: 'c2',
@@ -98,7 +99,8 @@ export const MOCK_CANDIDATES = [
     skills: ['Figma', 'Adobe XD', 'User Research'],
     experience: '3 tahun',
     bio: 'Fokus pada desain yang berpusat pada pengguna.',
-    avatar: 'https://picsum.photos/seed/siti/100/100'
+    avatar: 'https://picsum.photos/seed/siti/100/100',
+    category: 'art'
   },
   {
     id: 'c3',
@@ -108,7 +110,8 @@ export const MOCK_CANDIDATES = [
     skills: ['Node.js', 'PostgreSQL', 'Docker'],
     experience: '4 tahun',
     bio: 'Ahli dalam membangun API yang efisien.',
-    avatar: 'https://picsum.photos/seed/budi/100/100'
+    avatar: 'https://picsum.photos/seed/budi/100/100',
+    category: 'tech'
   },
   {
     id: 'c4',
@@ -118,6 +121,7 @@ export const MOCK_CANDIDATES = [
     skills: ['SEO', 'SEM', 'Content Strategy'],
     experience: '2 tahun',
     bio: 'Membantu bisnis tumbuh melalui strategi digital.',
-    avatar: 'https://picsum.photos/seed/dewi/100/100'
+    avatar: 'https://picsum.photos/seed/dewi/100/100',
+    category: 'marketing'
   }
 ];

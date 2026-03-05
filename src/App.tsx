@@ -23,14 +23,16 @@ import {
   Camera,
   Send,
   Navigation as NavigationIcon,
-  LogOut
+  LogOut,
+  Upload,
+  ChevronLeft
 } from 'lucide-react';
 import { Job, ViewState, TabState, UserProfile, Application, UserRole, Experience, Message } from './types';
 import { MOCK_JOBS, CATEGORIES, THEME, MOCK_CANDIDATES } from './constants';
 
 // --- Components ---
 
-const RoleSelection = ({ onSelect }: { onSelect: (role: UserRole) => void }) => {
+const RoleSelection = ({ onSelect, onLogin }: { onSelect: (role: UserRole) => void; onLogin: () => void }) => {
   return (
     <div className="min-h-screen bg-white p-8 flex flex-col justify-center">
       <h2 className="text-3xl font-bold text-navy mb-2">Selamat Datang!</h2>
@@ -63,7 +65,84 @@ const RoleSelection = ({ onSelect }: { onSelect: (role: UserRole) => void }) => 
           </div>
         </button>
       </div>
+
+      <div className="mt-12 text-center">
+        <p className="text-slate-500 text-sm">Sudah punya akun?</p>
+        <button 
+          onClick={onLogin}
+          className="mt-2 text-navy font-bold hover:underline"
+        >
+          Masuk Sekarang
+        </button>
+      </div>
     </div>
+  );
+};
+
+const Login: React.FC<{ onLogin: (userData: Partial<UserProfile>) => void; onBack: () => void }> = ({ onLogin, onBack }) => {
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    role: 'applicant' as UserRole
+  });
+
+  return (
+    <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} className="min-h-screen bg-white p-8 flex flex-col justify-center">
+      <button onClick={onBack} className="absolute top-8 left-8 p-2 bg-slate-50 rounded-xl text-navy">
+        <ChevronRight className="w-6 h-6 rotate-180" />
+      </button>
+
+      <h2 className="text-3xl font-bold text-navy mb-2">Masuk</h2>
+      <p className="text-slate-500 mb-8">Gunakan email dan kata sandi Anda.</p>
+
+      <div className="space-y-4">
+        <div className="flex bg-slate-50 p-1 rounded-2xl mb-4">
+          <button 
+            onClick={() => setFormData({...formData, role: 'applicant'})}
+            className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all ${formData.role === 'applicant' ? 'bg-white text-navy shadow-sm' : 'text-slate-400'}`}
+          >
+            Pelamar
+          </button>
+          <button 
+            onClick={() => setFormData({...formData, role: 'employer'})}
+            className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all ${formData.role === 'employer' ? 'bg-white text-navy shadow-sm' : 'text-slate-400'}`}
+          >
+            Pencari Karyawan
+          </button>
+        </div>
+
+        <div>
+          <label className="text-xs font-bold text-slate-400 uppercase">Email</label>
+          <input 
+            type="email" 
+            value={formData.email}
+            onChange={e => setFormData({...formData, email: e.target.value})}
+            placeholder="email@contoh.com"
+            className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-100 mt-1 focus:outline-none focus:ring-2 focus:ring-navy/5"
+          />
+        </div>
+        <div>
+          <label className="text-xs font-bold text-slate-400 uppercase">Kata Sandi / Kode</label>
+          <input 
+            type="password" 
+            value={formData.password}
+            onChange={e => setFormData({...formData, password: e.target.value})}
+            placeholder="••••••••"
+            className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-100 mt-1 focus:outline-none focus:ring-2 focus:ring-navy/5"
+          />
+        </div>
+      </div>
+
+      <button
+        disabled={!formData.email || !formData.password}
+        onClick={() => onLogin({ email: formData.email, role: formData.role, name: formData.email.split('@')[0] })}
+        className={`w-full py-4 rounded-2xl font-bold text-lg mt-8 transition-all ${
+          formData.email && formData.password ? 'bg-navy text-white shadow-lg' : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+        }`}
+      >
+        Masuk
+      </button>
+    </motion.div>
   );
 };
 
@@ -72,6 +151,7 @@ const ApplicantRegistration: React.FC<{ onComplete: (userData: Partial<UserProfi
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    password: '',
     phone: '',
     interests: [] as string[],
     location: 'Mendeteksi lokasi...',
@@ -157,6 +237,16 @@ const ApplicantRegistration: React.FC<{ onComplete: (userData: Partial<UserProfi
                 className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-100 mt-1 focus:outline-none focus:ring-2 focus:ring-navy/5"
               />
             </div>
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase">Kata Sandi / Kode</label>
+              <input 
+                type="password" 
+                value={formData.password}
+                onChange={e => setFormData({...formData, password: e.target.value})}
+                placeholder="••••••••"
+                className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-100 mt-1 focus:outline-none focus:ring-2 focus:ring-navy/5"
+              />
+            </div>
           </div>
         </div>
         <button
@@ -235,6 +325,7 @@ const EmployerRegistration: React.FC<{ onComplete: (userData: Partial<UserProfil
   const [companyData, setCompanyData] = useState({
     name: '',
     email: '',
+    password: '',
     location: 'Jakarta, Indonesia',
   });
   const [jobData, setJobData] = useState({
@@ -285,6 +376,16 @@ const EmployerRegistration: React.FC<{ onComplete: (userData: Partial<UserProfil
                 value={companyData.email}
                 onChange={e => setCompanyData({...companyData, email: e.target.value})}
                 placeholder="hr@perusahaan.com"
+                className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-100 mt-1 focus:outline-none focus:ring-2 focus:ring-navy/5"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase">Kata Sandi / Kode</label>
+              <input 
+                type="password" 
+                value={companyData.password}
+                onChange={e => setCompanyData({...companyData, password: e.target.value})}
+                placeholder="••••••••"
                 className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-100 mt-1 focus:outline-none focus:ring-2 focus:ring-navy/5"
               />
             </div>
@@ -503,7 +604,7 @@ const PostJobForm: React.FC<{ onBack: () => void; onSubmit: (job: any) => void }
   );
 };
 
-const EmployerDashboard = ({ jobs, applications, onPostJob, showToast, onChat }: { jobs: Job[]; applications: Application[]; onPostJob: () => void; showToast: (msg: string) => void; onChat: () => void }) => {
+const EmployerDashboard = ({ jobs, applications, onPostJob, showToast, onChat, onSeeAll }: { jobs: Job[]; applications: Application[]; onPostJob: () => void; showToast: (msg: string) => void; onChat: () => void; onSeeAll: () => void }) => {
   return (
     <div className="space-y-8">
       <div className="bg-navy p-6 rounded-3xl text-white relative overflow-hidden">
@@ -535,14 +636,14 @@ const EmployerDashboard = ({ jobs, applications, onPostJob, showToast, onChat }:
         <div className="flex justify-between items-center mb-4">
           <h3 className="font-bold text-navy text-lg">Lowongan Anda</h3>
           <button 
-            onClick={() => showToast('Membuka semua lowongan...')}
+            onClick={onSeeAll}
             className="text-navy text-sm font-bold hover:underline"
           >
             Lihat Semua
           </button>
         </div>
         <div className="space-y-4">
-          {jobs.map(job => (
+          {jobs.slice(0, 3).map(job => (
             <div 
               key={job.id} 
               onClick={() => showToast(`Mengelola lowongan: ${job.title}`)}
@@ -654,7 +755,7 @@ const SplashScreen: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
   );
 };
 
-const JobDetail: React.FC<{ job: Job; onBack: () => void; onApply: () => void }> = ({ job, onBack, onApply }) => {
+const JobDetail: React.FC<{ job: Job; onBack: () => void; onApply: () => void; isSaved: boolean; onToggleSave: () => void }> = ({ job, onBack, onApply, isSaved, onToggleSave }) => {
   const openInGoogleMaps = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (job.coordinates) {
@@ -676,9 +777,10 @@ const JobDetail: React.FC<{ job: Job; onBack: () => void; onApply: () => void }>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white" />
         <button 
           onClick={onBack}
-          className="absolute top-6 left-6 p-3 bg-white/80 backdrop-blur-md rounded-2xl shadow-lg text-navy"
+          className="absolute top-6 left-6 p-3 bg-white/80 backdrop-blur-md rounded-2xl shadow-lg text-navy flex items-center gap-1"
         >
-          <X className="w-6 h-6" />
+          <ChevronLeft className="w-6 h-6" />
+          <span className="text-xs font-bold">Kembali</span>
         </button>
       </div>
 
@@ -753,8 +855,11 @@ const JobDetail: React.FC<{ job: Job; onBack: () => void; onApply: () => void }>
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 p-6 bg-white/80 backdrop-blur-md border-t border-slate-100 flex gap-4 z-50 max-w-md mx-auto">
-        <button className="p-4 bg-slate-100 rounded-2xl text-slate-400">
-          <Heart className="w-6 h-6" />
+        <button 
+          onClick={onToggleSave}
+          className={`p-4 rounded-2xl transition-all ${isSaved ? 'bg-red-50 text-red-500' : 'bg-slate-100 text-slate-400'}`}
+        >
+          <Heart className={`w-6 h-6 ${isSaved ? 'fill-red-500' : ''}`} />
         </button>
         <button 
           onClick={onApply}
@@ -767,14 +872,351 @@ const JobDetail: React.FC<{ job: Job; onBack: () => void; onApply: () => void }>
   );
 };
 
-const JobCard: React.FC<{ job: Job; onApply: () => void; onSkip: () => void; onClick: () => void }> = ({ job, onApply, onSkip, onClick }) => {
+const PintuKursus: React.FC<{ onBack: () => void; showToast: (msg: string) => void }> = ({ onBack, showToast }) => {
+  const courses = [
+    { id: '1', title: 'Mastering React & Tailwind', instructor: 'Alex Rivera', duration: '12 Jam', price: 'Gratis', rating: 4.8, image: 'https://picsum.photos/seed/course1/400/200' },
+    { id: '2', title: 'UI/UX Design Fundamentals', instructor: 'Sarah Chen', duration: '8 Jam', price: 'Rp 150.000', rating: 4.9, image: 'https://picsum.photos/seed/course2/400/200' },
+    { id: '3', title: 'Digital Marketing 101', instructor: 'Budi Pratama', duration: '10 Jam', price: 'Gratis', rating: 4.7, image: 'https://picsum.photos/seed/course3/400/200' },
+    { id: '4', title: 'Backend with Node.js', instructor: 'Kevin Smith', duration: '15 Jam', price: 'Rp 200.000', rating: 4.6, image: 'https://picsum.photos/seed/course4/400/200' },
+  ];
+
+  return (
+    <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} className="min-h-screen bg-slate-50 flex flex-col z-50 fixed inset-0">
+      <div className="p-6 bg-white border-b border-slate-100 flex items-center gap-4 sticky top-0 z-10">
+        <button onClick={onBack} className="p-2 bg-slate-50 rounded-xl text-navy flex items-center gap-1">
+          <ChevronLeft className="w-6 h-6" />
+          <span className="text-xs font-bold">Kembali</span>
+        </button>
+        <h3 className="font-bold text-navy">Pintu Kursus</h3>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-6 space-y-6 pb-24">
+        <div className="bg-navy p-6 rounded-3xl text-white relative overflow-hidden">
+          <div className="relative z-10">
+            <h2 className="text-xl font-bold mb-2">Tingkatkan Skill-mu!</h2>
+            <p className="text-xs opacity-80">Pelajari materi terbaru dari para ahli di bidangnya.</p>
+          </div>
+          <BookOpen className="absolute -right-4 -bottom-4 w-24 h-24 text-white/10 rotate-12" />
+        </div>
+
+        <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+          {['Semua', 'Desain', 'Coding', 'Bisnis', 'Marketing'].map(cat => (
+            <button key={cat} className="px-4 py-2 bg-white border border-slate-100 rounded-full text-xs font-bold text-slate-500 whitespace-nowrap">
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 gap-6">
+          {courses.map(course => (
+            <div key={course.id} className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm group">
+              <img src={course.image} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
+              <div className="p-5">
+                <div className="flex justify-between items-start mb-2">
+                  <h4 className="font-bold text-navy leading-tight">{course.title}</h4>
+                  <span className="text-xs font-bold text-emerald-500">{course.price}</span>
+                </div>
+                <p className="text-xs text-slate-400 mb-4">{course.instructor} • {course.duration}</p>
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-1">
+                    <Heart className="w-3 h-3 text-yellow fill-yellow" />
+                    <span className="text-xs font-bold text-navy">{course.rating}</span>
+                  </div>
+                  <button 
+                    onClick={() => showToast('Pendaftaran kursus berhasil! Silakan cek email Anda.')}
+                    className="px-4 py-2 bg-navy text-white text-xs font-bold rounded-xl active:scale-95 transition-all"
+                  >
+                    Daftar Sekarang
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+const MyJobs: React.FC<{ jobs: Job[]; onBack: () => void; onEdit: (job: Job) => void }> = ({ jobs, onBack, onEdit }) => {
+  return (
+    <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} className="min-h-screen bg-slate-50 flex flex-col z-50 fixed inset-0">
+      <div className="p-6 bg-white border-b border-slate-100 flex items-center gap-4 sticky top-0 z-10">
+        <button onClick={onBack} className="p-2 bg-slate-50 rounded-xl text-navy flex items-center gap-1">
+          <ChevronLeft className="w-6 h-6" />
+          <span className="text-xs font-bold">Kembali</span>
+        </button>
+        <h3 className="font-bold text-navy">Lowongan Anda</h3>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-6 space-y-4">
+        {jobs.length > 0 ? jobs.map(job => (
+          <div key={job.id} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-center">
+            <div className="flex gap-4 items-center">
+              <div className="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center">
+                <Briefcase className="w-6 h-6 text-navy" />
+              </div>
+              <div>
+                <h4 className="font-bold text-navy">{job.title}</h4>
+                <p className="text-slate-400 text-xs">{job.type} • {job.postedAt}</p>
+              </div>
+            </div>
+            <button onClick={() => onEdit(job)} className="p-2 bg-slate-50 text-navy rounded-lg">
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+        )) : (
+          <div className="text-center py-12">
+            <Briefcase className="w-12 h-12 text-slate-200 mx-auto mb-4" />
+            <p className="text-slate-400 italic">Belum ada lowongan yang dipasang.</p>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+};
+
+const PostJob: React.FC<{ onBack: () => void; onSubmit: (job: Job) => void; user: UserProfile }> = ({ onBack, onSubmit, user }) => {
+  const [formData, setFormData] = useState<Partial<Job>>({
+    title: '',
+    company: user.name,
+    location: user.location || '',
+    salary: '',
+    type: 'Full-time',
+    category: 'Teknologi',
+    description: '',
+    requirements: [''],
+    logo: `https://picsum.photos/seed/${user.name}/100/100`,
+    verified: true,
+    postedAt: 'Baru saja'
+  });
+
+  const addRequirement = () => {
+    setFormData(prev => ({ ...prev, requirements: [...(prev.requirements || []), ''] }));
+  };
+
+  const updateRequirement = (index: number, value: string) => {
+    const newReqs = [...(formData.requirements || [])];
+    newReqs[index] = value;
+    setFormData(prev => ({ ...prev, requirements: newReqs }));
+  };
+
+  const removeRequirement = (index: number) => {
+    const newReqs = (formData.requirements || []).filter((_, i) => i !== index);
+    setFormData(prev => ({ ...prev, requirements: newReqs }));
+  };
+
+  return (
+    <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className="min-h-screen bg-white p-8 flex flex-col z-50 fixed inset-0">
+      <div className="flex items-center gap-4 mb-8">
+        <button onClick={onBack} className="p-2 bg-slate-50 rounded-xl text-navy flex items-center gap-1">
+          <ChevronLeft className="w-6 h-6" />
+          <span className="text-xs font-bold">Kembali</span>
+        </button>
+        <h3 className="font-bold text-navy flex-1 text-center pr-12">Pasang Lowongan</h3>
+        <button 
+          onClick={() => {
+            if (!formData.title || !formData.description) return;
+            onSubmit({ ...formData, id: Date.now().toString() } as Job);
+          }}
+          className={`font-bold ${formData.title && formData.description ? 'text-navy' : 'text-slate-300'}`}
+        >
+          Simpan
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto space-y-6 pb-8 no-scrollbar">
+        <div>
+          <label className="text-xs font-bold text-slate-400 uppercase">Judul Pekerjaan</label>
+          <input 
+            type="text" 
+            value={formData.title}
+            onChange={e => setFormData({...formData, title: e.target.value})}
+            placeholder="Contoh: Senior Frontend Developer"
+            className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-100 mt-1 focus:outline-none focus:ring-2 focus:ring-navy/5"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-bold text-slate-400 uppercase">Tipe</label>
+            <select 
+              value={formData.type}
+              onChange={e => setFormData({...formData, type: e.target.value as any})}
+              className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-100 mt-1 focus:outline-none"
+            >
+              <option value="Full-time">Full-time</option>
+              <option value="Part-time">Part-time</option>
+              <option value="Freelance">Freelance</option>
+              <option value="Internship">Internship</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-bold text-slate-400 uppercase">Kategori</label>
+            <select 
+              value={formData.category}
+              onChange={e => setFormData({...formData, category: e.target.value})}
+              className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-100 mt-1 focus:outline-none"
+            >
+              {CATEGORIES.map(cat => (
+                <option key={cat.id} value={cat.name}>{cat.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label className="text-xs font-bold text-slate-400 uppercase">Rentang Gaji</label>
+          <input 
+            type="text" 
+            value={formData.salary}
+            onChange={e => setFormData({...formData, salary: e.target.value})}
+            placeholder="Contoh: Rp 8jt - 12jt"
+            className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-100 mt-1 focus:outline-none focus:ring-2 focus:ring-navy/5"
+          />
+        </div>
+
+        <div>
+          <label className="text-xs font-bold text-slate-400 uppercase">Lokasi</label>
+          <input 
+            type="text" 
+            value={formData.location}
+            onChange={e => setFormData({...formData, location: e.target.value})}
+            placeholder="Contoh: Jakarta Selatan"
+            className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-100 mt-1 focus:outline-none focus:ring-2 focus:ring-navy/5"
+          />
+        </div>
+
+        <div>
+          <label className="text-xs font-bold text-slate-400 uppercase">Deskripsi Pekerjaan</label>
+          <textarea 
+            rows={4}
+            value={formData.description}
+            onChange={e => setFormData({...formData, description: e.target.value})}
+            placeholder="Jelaskan tanggung jawab dan detail pekerjaan..."
+            className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-100 mt-1 focus:outline-none focus:ring-2 focus:ring-navy/5"
+          />
+        </div>
+
+        <div>
+          <div className="flex justify-between items-center mb-2">
+            <label className="text-xs font-bold text-slate-400 uppercase">Persyaratan</label>
+            <button onClick={addRequirement} className="text-navy text-xs font-bold">+ Tambah</button>
+          </div>
+          <div className="space-y-3">
+            {formData.requirements?.map((req, index) => (
+              <div key={index} className="flex gap-2">
+                <input 
+                  type="text" 
+                  value={req}
+                  onChange={e => updateRequirement(index, e.target.value)}
+                  placeholder={`Syarat #${index + 1}`}
+                  className="flex-1 p-4 bg-slate-50 rounded-2xl border border-slate-100 focus:outline-none focus:ring-2 focus:ring-navy/5"
+                />
+                {formData.requirements!.length > 1 && (
+                  <button onClick={() => removeRequirement(index)} className="p-4 text-red-500">
+                    <X className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+const LocationConnection: React.FC<{ 
+  location: string; 
+  onBack: () => void; 
+  jobs: Job[]; 
+  candidates: any[];
+  setSelectedJob: (job: Job) => void;
+  setView: (view: ViewState) => void;
+}> = ({ location, onBack, jobs, candidates, setSelectedJob, setView }) => {
+  const filteredJobs = jobs.filter(j => j.location.toLowerCase().includes(location.toLowerCase()) || location.toLowerCase().includes(j.location.toLowerCase()));
+  const filteredCandidates = candidates.filter(c => c.location.toLowerCase().includes(location.toLowerCase()) || location.toLowerCase().includes(c.location.toLowerCase()));
+
+  return (
+    <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} className="min-h-screen bg-slate-50 flex flex-col z-50 fixed inset-0">
+      <div className="p-6 bg-white border-b border-slate-100 flex items-center gap-4">
+        <button onClick={onBack} className="p-2 bg-slate-50 rounded-xl text-navy flex items-center gap-1">
+          <ChevronLeft className="w-6 h-6" />
+          <span className="text-xs font-bold">Kembali</span>
+        </button>
+        <div>
+          <h3 className="font-bold text-navy">Terhubung di {location}</h3>
+          <p className="text-xs text-slate-500">{filteredJobs.length} Lowongan • {filteredCandidates.length} Kandidat</p>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-6 space-y-8">
+        <section>
+          <h4 className="font-bold text-navy mb-4 flex items-center gap-2">
+            <Briefcase className="w-4 h-4 text-navy" /> Lowongan di Sekitar
+          </h4>
+          <div className="space-y-4">
+            {filteredJobs.length > 0 ? filteredJobs.map(job => (
+              <div key={job.id} className="bg-white p-4 rounded-2xl border border-slate-100 flex gap-4 items-center shadow-sm">
+                <img src={job.logo} className="w-12 h-12 rounded-xl object-cover" referrerPolicy="no-referrer" />
+                <div className="flex-1">
+                  <h5 className="font-bold text-navy text-sm">{job.title}</h5>
+                  <p className="text-slate-500 text-xs">{job.company}</p>
+                </div>
+                <div className="text-right flex flex-col items-end gap-2">
+                  <div className="text-right">
+                    <p className="text-navy font-bold text-[10px]">{job.salary}</p>
+                    <p className="text-[10px] text-slate-400">{job.type}</p>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      setSelectedJob(job);
+                      setView('detail');
+                    }}
+                    className="px-3 py-1 bg-navy/5 text-navy text-[10px] rounded-lg font-bold hover:bg-navy/10 transition-colors"
+                  >
+                    Detail
+                  </button>
+                </div>
+              </div>
+            )) : (
+              <p className="text-slate-400 text-sm italic">Belum ada lowongan di area ini.</p>
+            )}
+          </div>
+        </section>
+
+        <section>
+          <h4 className="font-bold text-navy mb-4 flex items-center gap-2">
+            <User className="w-4 h-4 text-navy" /> Kandidat di Sekitar
+          </h4>
+          <div className="space-y-4">
+            {filteredCandidates.length > 0 ? filteredCandidates.map(candidate => (
+              <div key={candidate.id} className="bg-white p-4 rounded-2xl border border-slate-100 flex gap-4 items-center shadow-sm">
+                <img src={candidate.avatar} className="w-12 h-12 rounded-full border-2 border-slate-50" referrerPolicy="no-referrer" />
+                <div className="flex-1">
+                  <h5 className="font-bold text-navy text-sm">{candidate.name}</h5>
+                  <p className="text-slate-500 text-xs">{candidate.title}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-navy font-bold text-[10px]">{candidate.experience}</p>
+                  <button className="mt-1 px-3 py-1 bg-navy text-white text-[10px] rounded-lg font-bold">Hubungi</button>
+                </div>
+              </div>
+            )) : (
+              <p className="text-slate-400 text-sm italic">Belum ada kandidat di area ini.</p>
+            )}
+          </div>
+        </section>
+      </div>
+    </motion.div>
+  );
+};
+
+const JobCard: React.FC<{ job: Job; onApply: () => void; onSkip: () => void; onClick: () => void; onLocationClick: (loc: string) => void; isSaved: boolean; onToggleSave: () => void }> = ({ job, onApply, onSkip, onClick, onLocationClick, isSaved, onToggleSave }) => {
   const openInGoogleMaps = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (job.coordinates) {
-      window.open(`https://www.google.com/maps/search/?api=1&query=${job.coordinates.lat},${job.coordinates.lng}`, '_blank');
-    } else {
-      window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.location + ' ' + job.company)}`, '_blank');
-    }
+    onLocationClick(job.location);
   };
 
   return (
@@ -794,11 +1236,22 @@ const JobCard: React.FC<{ job: Job; onApply: () => void; onSkip: () => void; onC
       <div className="p-6">
         <div className="flex justify-between items-start">
           <img src={job.logo} alt={job.company} className="w-16 h-16 rounded-2xl object-cover" referrerPolicy="no-referrer" />
-          {job.verified && (
-            <div className="bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-              <CheckCircle className="w-3 h-3" /> Terverifikasi
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            {job.verified && (
+              <div className="bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                <CheckCircle className="w-3 h-3" /> Terverifikasi
+              </div>
+            )}
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleSave();
+              }}
+              className={`p-2 rounded-xl transition-all ${isSaved ? 'bg-red-50 text-red-500' : 'bg-slate-50 text-slate-300'}`}
+            >
+              <Heart className={`w-4 h-4 ${isSaved ? 'fill-red-500' : ''}`} />
+            </button>
+          </div>
         </div>
 
         <div className="mt-6">
@@ -884,6 +1337,108 @@ const Navigation = ({ activeTab, setActiveTab }: { activeTab: TabState; setActiv
   );
 };
 
+const ApplyForm: React.FC<{ job: Job; onBack: () => void; onSubmit: (data: any) => void }> = ({ job, onBack, onSubmit }) => {
+  const [formData, setFormData] = useState({
+    coverLetter: '',
+    cv: null as File | null,
+    ijazah: null as File | null,
+    foto: null as File | null,
+    dokumenLain: null as File | null,
+  });
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
+    if (e.target.files && e.target.files[0]) {
+      setFormData({ ...formData, [field]: e.target.files[0] });
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  const FileInput = ({ label, field, icon: Icon }: { label: string; field: string; icon: any }) => (
+    <div className="space-y-2">
+      <label className="text-sm font-bold text-navy block">{label}</label>
+      <div className="relative">
+        <input 
+          type="file" 
+          onChange={(e) => handleFileChange(e, field)}
+          className="hidden" 
+          id={`file-${field}`}
+        />
+        <label 
+          htmlFor={`file-${field}`}
+          className="w-full p-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex items-center gap-3 cursor-pointer hover:border-navy/20 transition-all"
+        >
+          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm text-navy">
+            <Icon className="w-5 h-5" />
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <p className="text-sm font-medium text-navy truncate">
+              {(formData as any)[field] ? (formData as any)[field].name : `Pilih file ${label}`}
+            </p>
+            <p className="text-[10px] text-slate-400">PDF, JPG, PNG (Maks 5MB)</p>
+          </div>
+          <Upload className="w-4 h-4 text-slate-300" />
+        </label>
+      </div>
+    </div>
+  );
+
+  return (
+    <motion.div 
+      initial={{ x: '100%' }} 
+      animate={{ x: 0 }} 
+      exit={{ x: '100%' }} 
+      className="min-h-screen bg-white flex flex-col z-50 fixed inset-0 overflow-y-auto"
+    >
+      <div className="p-6 border-b border-slate-100 flex items-center gap-4 sticky top-0 bg-white/80 backdrop-blur-md z-10">
+        <button onClick={onBack} className="p-2 bg-slate-50 rounded-xl text-navy flex items-center gap-1">
+          <ChevronLeft className="w-6 h-6" />
+          <span className="text-xs font-bold">Kembali</span>
+        </button>
+        <div>
+          <h3 className="font-bold text-navy">Lamar Pekerjaan</h3>
+          <p className="text-xs text-slate-400 truncate w-48">{job.title} • {job.company}</p>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="p-6 space-y-6 pb-24">
+        <div className="bg-navy/5 p-4 rounded-2xl border border-navy/10">
+          <p className="text-xs text-navy/70 leading-relaxed">
+            Pastikan semua dokumen yang Anda unggah sudah benar dan terbaru untuk meningkatkan peluang Anda diterima.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-bold text-navy block">Surat Lamaran (Opsional)</label>
+          <textarea 
+            value={formData.coverLetter}
+            onChange={(e) => setFormData({ ...formData, coverLetter: e.target.value })}
+            placeholder="Tuliskan alasan mengapa Anda tertarik dengan posisi ini..."
+            className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm focus:outline-none focus:border-navy/20 min-h-[120px]"
+          />
+        </div>
+
+        <FileInput label="CV / Resume" field="cv" icon={Briefcase} />
+        <FileInput label="Ijazah Terakhir" field="ijazah" icon={BookOpen} />
+        <FileInput label="Foto Terbaru" field="foto" icon={Camera} />
+        <FileInput label="Dokumen Penting Lainnya" field="dokumenLain" icon={NavigationIcon} />
+
+        <div className="fixed bottom-0 left-0 right-0 p-6 bg-white/80 backdrop-blur-md border-t border-slate-100 max-w-md mx-auto">
+          <button 
+            type="submit"
+            className="w-full py-4 bg-navy text-white font-bold rounded-2xl shadow-lg shadow-navy/20 hover:bg-navy/90 transition-all flex items-center justify-center gap-2"
+          >
+            Kirim Lamaran <ArrowRight className="w-5 h-5" />
+          </button>
+        </div>
+      </form>
+    </motion.div>
+  );
+};
+
 // --- Main App ---
 
 export default function App() {
@@ -902,6 +1457,7 @@ export default function App() {
   });
 
   const [view, setView] = useState<ViewState>('splash');
+  const [lastView, setLastView] = useState<ViewState>('main');
   const [activeTab, setActiveTab] = useState<TabState>('home');
   const [jobs, setJobs] = useState<Job[]>(MOCK_JOBS);
   
@@ -928,10 +1484,21 @@ export default function App() {
   const [currentJobIndex, setCurrentJobIndex] = useState(0);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [applications, setApplications] = useState<Application[]>([]);
+  const [savedJobs, setSavedJobs] = useState<string[]>([]);
+  const [selectedJobCategory, setSelectedJobCategory] = useState<string | null>(null);
+  const [selectedCandidateCategory, setSelectedCandidateCategory] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [editingExperience, setEditingExperience] = useState<Experience | null>(null);
   const [locationSearch, setLocationSearch] = useState('');
   const [candidateSearch, setCandidateSearch] = useState('');
+  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    type: '',
+    experience: '',
+    salaryMin: '',
+    salaryMax: ''
+  });
 
   const [messages, setMessages] = useState<Message[]>([
     { id: '1', sender: 'HR PT Maju', text: 'Halo, apakah besok bisa interview?', time: '10:30', isMe: false },
@@ -1013,27 +1580,56 @@ export default function App() {
   };
 
   const handleApply = (jobToApply?: Job) => {
-    const job = jobToApply || jobs[currentJobIndex];
+    const job = jobToApply || sortedJobs[currentJobIndex];
     if (!job) return;
+    setSelectedJob(job);
+    setLastView(view);
+    setView('apply-form');
+  };
+
+  const handleLocationClick = (loc: string) => {
+    setSelectedLocation(loc);
+    setView('location-connection');
+  };
+
+  const completeApplication = (formData: any) => {
+    if (!selectedJob) return;
 
     const newApp: Application = {
       id: Math.random().toString(36).substr(2, 9),
-      jobId: job.id,
+      jobId: selectedJob.id,
       status: 'Terkirim',
       appliedAt: 'Baru saja'
     };
     setApplications([newApp, ...applications]);
     
-    if (!jobToApply) {
+    showToast(`Lamaran ke ${selectedJob.company} berhasil dikirim!`);
+    
+    // Reset state
+    const wasFromDetail = view === 'detail';
+    if (!wasFromDetail) {
       setCurrentJobIndex(prev => prev + 1);
-    } else {
-      setSelectedJob(null);
-      setView('main');
     }
+    
+    setSelectedJob(null);
+    setView('main');
   };
 
   const handleSkip = () => {
     setCurrentJobIndex(prev => prev + 1);
+  };
+
+  const handleToggleSave = (jobId: string) => {
+    setSavedJobs(prev => {
+      const isSaved = prev.includes(jobId);
+      if (isSaved) {
+        showToast('Lowongan dihapus dari favorit');
+        return prev.filter(id => id !== jobId);
+      } else {
+        showToast('Lowongan disimpan ke favorit');
+        return [...prev, jobId];
+      }
+    });
   };
 
   const openDetail = (job: Job) => {
@@ -1056,8 +1652,20 @@ export default function App() {
 
         {view === 'role-selection' && (
           <motion.div key="role" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <RoleSelection onSelect={handleRoleSelect} />
+            <RoleSelection onSelect={handleRoleSelect} onLogin={() => setView('login')} />
           </motion.div>
+        )}
+
+        {view === 'login' && (
+          <Login 
+            key="login"
+            onLogin={(data) => {
+              setUser({ ...user, ...data, isLoggedIn: true });
+              setView('main');
+              showToast(`Selamat datang kembali, ${data.name}!`);
+            }}
+            onBack={() => setView('role-selection')}
+          />
         )}
 
         {view === 'applicant-reg' && (
@@ -1076,22 +1684,58 @@ export default function App() {
           />
         )}
 
+        {view === 'location-connection' && selectedLocation && (
+          <LocationConnection 
+            key="location-connection"
+            location={selectedLocation}
+            onBack={() => setView('main')}
+            jobs={jobs}
+            candidates={MOCK_CANDIDATES}
+            setSelectedJob={setSelectedJob}
+            setView={setView}
+          />
+        )}
+
+        {view === 'post-job' && (
+          <PostJob 
+            onBack={() => setView('main')}
+            user={user}
+            onSubmit={(newJob) => {
+              setJobs([newJob, ...jobs]);
+              showToast('Lowongan berhasil dipasang!');
+              setView('main');
+            }}
+          />
+        )}
+
         {view === 'detail' && selectedJob && (
           <JobDetail 
             key="detail"
             job={selectedJob} 
             onBack={() => setView('main')} 
             onApply={() => handleApply(selectedJob)} 
+            isSaved={savedJobs.includes(selectedJob.id)}
+            onToggleSave={() => handleToggleSave(selectedJob.id)}
+          />
+        )}
+
+        {view === 'apply-form' && selectedJob && (
+          <ApplyForm 
+            key="apply-form"
+            job={selectedJob}
+            onBack={() => setView(lastView)}
+            onSubmit={completeApplication}
           />
         )}
 
         {view === 'edit-profile' && (
           <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className="min-h-screen bg-white p-8 flex flex-col z-50 fixed inset-0">
-            <div className="flex justify-between items-center mb-8">
-              <button onClick={() => setView('main')} className="p-2 bg-slate-50 rounded-xl text-navy">
-                <X className="w-6 h-6" />
+            <div className="flex items-center gap-4 mb-8">
+              <button onClick={() => setView('main')} className="p-2 bg-slate-50 rounded-xl text-navy flex items-center gap-1">
+                <ChevronLeft className="w-6 h-6" />
+                <span className="text-xs font-bold">Kembali</span>
               </button>
-              <h3 className="font-bold text-navy">Edit Profil</h3>
+              <h3 className="font-bold text-navy flex-1 text-center pr-12">Edit Profil</h3>
               <button 
                 onClick={() => {
                   showToast('Profil berhasil diperbarui!');
@@ -1106,8 +1750,15 @@ export default function App() {
             <div className="flex-1 overflow-y-auto space-y-6 pb-8">
               <div className="flex flex-col items-center mb-8">
                 <div className="relative">
-                  <img src={`https://picsum.photos/seed/${user.name}/200/200`} className="w-24 h-24 rounded-full object-cover border-4 border-slate-50" referrerPolicy="no-referrer" />
-                  <button className="absolute bottom-0 right-0 bg-navy text-white p-2 rounded-full border-2 border-white">
+                  <img 
+                    src={`https://picsum.photos/seed/${user.name || 'user1'}/200/200`} 
+                    className="w-24 h-24 rounded-full object-cover border-4 border-slate-50" 
+                    referrerPolicy="no-referrer" 
+                  />
+                  <button 
+                    onClick={() => showToast('Fitur ganti foto profil segera hadir!')}
+                    className="absolute bottom-0 right-0 bg-navy text-white p-2 rounded-full border-2 border-white"
+                  >
                     <Camera className="w-4 h-4" />
                   </button>
                 </div>
@@ -1120,7 +1771,7 @@ export default function App() {
                     type="text" 
                     value={user.name}
                     onChange={e => setUser({...user, name: e.target.value})}
-                    className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-100 mt-1"
+                    className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-100 mt-1 focus:outline-none focus:ring-2 focus:ring-navy/5"
                   />
                 </div>
                 <div>
@@ -1129,7 +1780,7 @@ export default function App() {
                     type="text" 
                     value={user.title}
                     onChange={e => setUser({...user, title: e.target.value})}
-                    className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-100 mt-1"
+                    className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-100 mt-1 focus:outline-none focus:ring-2 focus:ring-navy/5"
                   />
                 </div>
                 <div>
@@ -1138,7 +1789,8 @@ export default function App() {
                     rows={3}
                     value={user.bio}
                     onChange={e => setUser({...user, bio: e.target.value})}
-                    className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-100 mt-1"
+                    placeholder="Ceritakan sedikit tentang diri Anda..."
+                    className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-100 mt-1 focus:outline-none focus:ring-2 focus:ring-navy/5"
                   />
                 </div>
                 <div>
@@ -1148,7 +1800,7 @@ export default function App() {
                       type="text" 
                       value={user.location}
                       onChange={e => setUser({...user, location: e.target.value})}
-                      className="flex-1 p-4 bg-slate-50 rounded-2xl border border-slate-100"
+                      className="flex-1 p-4 bg-slate-50 rounded-2xl border border-slate-100 focus:outline-none focus:ring-2 focus:ring-navy/5"
                     />
                     <button 
                       onClick={refreshLocation}
@@ -1167,8 +1819,9 @@ export default function App() {
         {view === 'chat' && (
           <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} className="min-h-screen bg-white flex flex-col z-50 fixed inset-0">
             <div className="p-6 border-b border-slate-100 flex items-center gap-4">
-              <button onClick={() => setView('main')} className="p-2 bg-slate-50 rounded-xl text-navy">
-                <ChevronRight className="w-6 h-6 rotate-180" />
+              <button onClick={() => setView('main')} className="p-2 bg-slate-50 rounded-xl text-navy flex items-center gap-1">
+                <ChevronLeft className="w-6 h-6" />
+                <span className="text-xs font-bold">Kembali</span>
               </button>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 font-bold">HR</div>
@@ -1215,11 +1868,12 @@ export default function App() {
 
         {view === 'edit-experience' && (
           <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className="min-h-screen bg-white p-8 flex flex-col z-50 fixed inset-0">
-            <div className="flex justify-between items-center mb-8">
-              <button onClick={() => setView('main')} className="p-2 bg-slate-50 rounded-xl text-navy">
-                <X className="w-6 h-6" />
+            <div className="flex items-center gap-4 mb-8">
+              <button onClick={() => setView('main')} className="p-2 bg-slate-50 rounded-xl text-navy flex items-center gap-1">
+                <ChevronLeft className="w-6 h-6" />
+                <span className="text-xs font-bold">Kembali</span>
               </button>
-              <h3 className="font-bold text-navy">{editingExperience?.id ? 'Edit' : 'Tambah'} Pengalaman</h3>
+              <h3 className="font-bold text-navy flex-1 text-center pr-12">{editingExperience?.id ? 'Edit' : 'Tambah'} Pengalaman</h3>
               <button 
                 onClick={() => {
                   if (!editingExperience?.company || !editingExperience?.position) {
@@ -1332,6 +1986,7 @@ export default function App() {
                       onPostJob={() => setView('post-job')}
                       showToast={showToast}
                       onChat={() => setView('chat')}
+                      onSeeAll={() => setView('my-jobs')}
                     />
                   )}
                   {activeTab === 'explore' && (
@@ -1382,12 +2037,16 @@ export default function App() {
                       </div>
                       
                       <div className="space-y-4">
-                        {MOCK_CANDIDATES.filter(c => 
-                          !candidateSearch || 
-                          c.name.toLowerCase().includes(candidateSearch.toLowerCase()) || 
-                          c.title.toLowerCase().includes(candidateSearch.toLowerCase()) ||
-                          c.skills.some(s => s.toLowerCase().includes(candidateSearch.toLowerCase()))
-                        ).map(candidate => (
+                        {MOCK_CANDIDATES.filter(c => {
+                          const matchesSearch = !candidateSearch || 
+                            c.name.toLowerCase().includes(candidateSearch.toLowerCase()) || 
+                            c.title.toLowerCase().includes(candidateSearch.toLowerCase()) ||
+                            c.skills.some(s => s.toLowerCase().includes(candidateSearch.toLowerCase()));
+                          
+                          const matchesExperience = !filters.experience || c.experience === filters.experience;
+                          
+                          return matchesSearch && matchesExperience;
+                        }).map(candidate => (
                           <div 
                             key={candidate.id} 
                             onClick={() => showToast(`Membuka profil: ${candidate.name}`)}
@@ -1420,12 +2079,16 @@ export default function App() {
                             </div>
                           </div>
                         ))}
-                        {MOCK_CANDIDATES.filter(c => 
-                          !candidateSearch || 
-                          c.name.toLowerCase().includes(candidateSearch.toLowerCase()) || 
-                          c.title.toLowerCase().includes(candidateSearch.toLowerCase()) ||
-                          c.skills.some(s => s.toLowerCase().includes(candidateSearch.toLowerCase()))
-                        ).length === 0 && (
+                        {MOCK_CANDIDATES.filter(c => {
+                          const matchesSearch = !candidateSearch || 
+                            c.name.toLowerCase().includes(candidateSearch.toLowerCase()) || 
+                            c.title.toLowerCase().includes(candidateSearch.toLowerCase()) ||
+                            c.skills.some(s => s.toLowerCase().includes(candidateSearch.toLowerCase()));
+                          
+                          const matchesExperience = !filters.experience || c.experience === filters.experience;
+                          
+                          return matchesSearch && matchesExperience;
+                        }).length === 0 && (
                           <div className="text-center py-12 bg-white rounded-3xl border border-dashed border-slate-200">
                             <p className="text-slate-400 text-sm">Tidak ada kandidat yang cocok.</p>
                           </div>
@@ -1436,7 +2099,10 @@ export default function App() {
                         <div className="relative z-10">
                           <h3 className="font-bold text-lg mb-2">Butuh bantuan mencari?</h3>
                           <p className="text-sm opacity-80 mb-4">Gunakan filter lanjutan untuk menemukan kandidat yang tepat.</p>
-                          <button className="w-full py-3 bg-yellow text-navy rounded-xl font-bold flex items-center justify-center gap-2">
+                          <button 
+                            onClick={() => setIsFilterOpen(true)}
+                            className="w-full py-3 bg-yellow text-navy rounded-xl font-bold flex items-center justify-center gap-2"
+                          >
                             <Filter className="w-4 h-4" /> Filter Kandidat
                           </button>
                         </div>
@@ -1457,9 +2123,23 @@ export default function App() {
                           </div>
                         </div>
                         <h2 className="text-xl font-bold text-navy mt-4">{user.name}</h2>
-                        <p className="text-slate-500 text-sm">Employer Account</p>
+                        <p className="text-slate-500 text-sm">{user.role === 'employer' ? 'Employer Account' : user.title}</p>
+                        
+                        {user.bio && (
+                          <p className="text-slate-400 text-xs text-center mt-3 px-8 leading-relaxed italic">
+                            "{user.bio}"
+                          </p>
+                        )}
                         
                         <div className="mt-6 flex flex-col gap-3 w-full">
+                          <button 
+                            onClick={() => setView('edit-profile')}
+                            className="w-full px-4 py-3 bg-navy text-white rounded-xl text-xs font-bold shadow-lg shadow-navy/20 flex items-center justify-center gap-2"
+                          >
+                            <User className="w-3 h-3" /> 
+                            Edit Profil
+                          </button>
+                          
                           <button 
                             onClick={toggleRole}
                             className="w-full px-4 py-3 bg-navy/5 text-navy rounded-xl text-xs font-bold border border-navy/10 flex items-center justify-center gap-2"
@@ -1502,6 +2182,9 @@ export default function App() {
                               onApply={handleApply}
                               onSkip={handleSkip}
                               onClick={() => openDetail(sortedJobs[currentJobIndex])}
+                              onLocationClick={handleLocationClick}
+                              isSaved={savedJobs.includes(sortedJobs[currentJobIndex].id)}
+                              onToggleSave={() => handleToggleSave(sortedJobs[currentJobIndex].id)}
                             />
                           </AnimatePresence>
                         ) : (
@@ -1524,7 +2207,7 @@ export default function App() {
                       {/* Quick Stats */}
                       <div className="grid grid-cols-2 gap-4 w-full mt-12">
                         <div 
-                          onClick={() => showToast('Fitur Pintu Kursus segera hadir!')}
+                          onClick={() => setView('courses')}
                           className="bg-navy p-4 rounded-2xl text-white cursor-pointer hover:bg-navy/90 transition-all"
                         >
                           <div className="flex items-center gap-2 mb-2">
@@ -1555,6 +2238,8 @@ export default function App() {
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
                             <input 
                               type="text" 
+                              value={candidateSearch}
+                              onChange={(e) => setCandidateSearch(e.target.value)}
                               placeholder="Cari kandidat (misal: Frontend Developer)..."
                               className="w-full pl-12 pr-4 py-4 bg-white rounded-2xl border border-slate-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-navy/5"
                             />
@@ -1563,11 +2248,24 @@ export default function App() {
                           <section className="mb-8">
                             <h3 className="font-bold text-navy mb-4">Kategori Kandidat</h3>
                             <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
+                              <button 
+                                onClick={() => setSelectedCandidateCategory(null)}
+                                className={`flex-shrink-0 px-6 py-3 rounded-xl border border-slate-100 shadow-sm font-medium transition-all ${
+                                  !selectedCandidateCategory ? 'bg-navy text-white border-navy' : 'bg-white text-slate-600 hover:border-navy/20'
+                                }`}
+                              >
+                                Semua
+                              </button>
                               {CATEGORIES.map(cat => (
                                 <button 
                                   key={cat.id} 
-                                  onClick={() => showToast(`Mencari kandidat kategori: ${cat.name}`)}
-                                  className="flex-shrink-0 px-6 py-3 bg-white rounded-xl border border-slate-100 shadow-sm font-medium text-slate-600 flex items-center gap-2 hover:border-navy/20 transition-all"
+                                  onClick={() => {
+                                    setSelectedCandidateCategory(cat.id);
+                                    showToast(`Mencari kandidat kategori: ${cat.name}`);
+                                  }}
+                                  className={`flex-shrink-0 px-6 py-3 rounded-xl border border-slate-100 shadow-sm font-medium flex items-center gap-2 transition-all ${
+                                    selectedCandidateCategory === cat.id ? 'bg-navy text-white border-navy' : 'bg-white text-slate-600 hover:border-navy/20'
+                                  }`}
                                 >
                                   <span>{cat.icon}</span> {cat.name}
                                 </button>
@@ -1581,7 +2279,12 @@ export default function App() {
                           </div>
                           
                           <div className="space-y-4">
-                            {MOCK_CANDIDATES.map(candidate => (
+                            {MOCK_CANDIDATES.filter(c => {
+                              const matchesSearch = c.name.toLowerCase().includes(candidateSearch.toLowerCase()) || 
+                                                  c.title.toLowerCase().includes(candidateSearch.toLowerCase());
+                              const matchesCategory = !selectedCandidateCategory || c.category === selectedCandidateCategory;
+                              return matchesSearch && matchesCategory;
+                            }).map(candidate => (
                               <div 
                                 key={candidate.id} 
                                 onClick={() => showToast(`Membuka profil: ${candidate.name}`)}
@@ -1599,7 +2302,15 @@ export default function App() {
                                 </div>
                                 <div className="text-right">
                                   <p className="text-navy font-bold text-xs">{candidate.experience}</p>
-                                  <p className="text-[10px] text-slate-400">{candidate.location}</p>
+                                  <button 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleLocationClick(candidate.location);
+                                    }}
+                                    className="text-[10px] text-slate-400 hover:text-navy hover:underline"
+                                  >
+                                    {candidate.location}
+                                  </button>
                                 </div>
                               </div>
                             ))}
@@ -1609,11 +2320,50 @@ export default function App() {
                             <div className="relative z-10">
                               <h3 className="font-bold text-lg mb-2">Butuh bantuan mencari?</h3>
                               <p className="text-sm opacity-80 mb-4">Gunakan filter lanjutan untuk menemukan kandidat yang tepat.</p>
-                              <button className="w-full py-3 bg-yellow text-navy rounded-xl font-bold flex items-center justify-center gap-2">
+                              <button 
+                                onClick={() => {
+                                  setIsFilterOpen(true);
+                                  showToast('Membuka filter lanjutan...');
+                                }}
+                                className="w-full py-3 bg-yellow text-navy rounded-xl font-bold flex items-center justify-center gap-2"
+                              >
                                 <Filter className="w-4 h-4" /> Filter Kandidat
                               </button>
                             </div>
                             <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+                          </div>
+
+                          <div className="mt-8">
+                            <div className="flex justify-between items-center mb-4">
+                              <h3 className="font-bold text-navy">Kandidat Terdekat</h3>
+                              <button 
+                                onClick={() => handleLocationClick(user.location || 'Jakarta')}
+                                className="text-navy text-sm font-bold hover:underline flex items-center gap-1"
+                              >
+                                <MapPin className="w-4 h-4" /> Lihat Sekitar
+                              </button>
+                            </div>
+                            <div className="space-y-4">
+                              {MOCK_CANDIDATES.filter(c => 
+                                user.location && (user.location.includes(c.location) || c.location.includes(user.location))
+                              ).slice(0, 3).map(candidate => (
+                                <div 
+                                  key={candidate.id} 
+                                  onClick={() => showToast(`Membuka profil: ${candidate.name}`)}
+                                  className="bg-white p-4 rounded-2xl border border-slate-100 flex gap-4 items-center cursor-pointer hover:border-navy/20 transition-all shadow-sm"
+                                >
+                                  <img src={candidate.avatar} className="w-12 h-12 rounded-full border-2 border-slate-50" referrerPolicy="no-referrer" />
+                                  <div className="flex-1">
+                                    <h4 className="font-bold text-navy text-sm">{candidate.name}</h4>
+                                    <p className="text-slate-500 text-[10px] font-medium">{candidate.title}</p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-navy font-bold text-[10px]">{candidate.experience}</p>
+                                    <p className="text-[10px] text-slate-400">{candidate.location}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         </div>
                       ) : (
@@ -1667,7 +2417,7 @@ export default function App() {
                               {['Jakarta', 'Bandung', 'Surabaya', 'Medan', 'Bali'].map(city => (
                                 <button 
                                   key={city}
-                                  onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(city)}`, '_blank')}
+                                  onClick={() => handleLocationClick(city)}
                                   className="px-4 py-2 bg-white border border-slate-100 rounded-full text-xs font-bold text-slate-500 hover:border-navy/20 transition-all whitespace-nowrap"
                                 >
                                   {city}
@@ -1678,11 +2428,24 @@ export default function App() {
 
                           <h3 className="font-bold text-navy mb-4">Kategori Populer</h3>
                           <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
+                            <button 
+                              onClick={() => setSelectedJobCategory(null)}
+                              className={`flex-shrink-0 px-6 py-3 rounded-xl border border-slate-100 shadow-sm font-medium transition-all ${
+                                !selectedJobCategory ? 'bg-navy text-white border-navy' : 'bg-white text-slate-600 hover:border-navy/20'
+                              }`}
+                            >
+                              Semua
+                            </button>
                             {CATEGORIES.map(cat => (
                               <button 
                                 key={cat.id} 
-                                onClick={() => showToast(`Mencari kategori: ${cat.name}`)}
-                                className="flex-shrink-0 px-6 py-3 bg-white rounded-xl border border-slate-100 shadow-sm font-medium text-slate-600 flex items-center gap-2 hover:border-navy/20 transition-all"
+                                onClick={() => {
+                                  setSelectedJobCategory(cat.id);
+                                  showToast(`Mencari kategori: ${cat.name}`);
+                                }}
+                                className={`flex-shrink-0 px-6 py-3 rounded-xl border border-slate-100 shadow-sm font-medium flex items-center gap-2 transition-all ${
+                                  selectedJobCategory === cat.id ? 'bg-navy text-white border-navy' : 'bg-white text-slate-600 hover:border-navy/20'
+                                }`}
                               >
                                 <span>{cat.icon}</span> {cat.name}
                               </button>
@@ -1691,22 +2454,24 @@ export default function App() {
 
                           <div className="mt-8">
                             <div className="flex justify-between items-center mb-4">
-                              <h3 className="font-bold text-navy">Loker Terdekat</h3>
+                              <h3 className="font-bold text-navy">
+                                {selectedJobCategory ? `Loker: ${CATEGORIES.find(c => c.id === selectedJobCategory)?.name}` : 'Loker Terdekat'}
+                              </h3>
                               <button 
-                                onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=lowongan+kerja+terdekat`, '_blank')}
+                                onClick={() => handleLocationClick(user.location || 'Jakarta')}
                                 className="text-navy text-sm font-bold hover:underline flex items-center gap-1"
                               >
-                                <MapPin className="w-4 h-4" /> Lihat Peta
+                                <MapPin className="w-4 h-4" /> Lihat Sekitar
                               </button>
                             </div>
                             <div className="space-y-4">
-                              {MOCK_JOBS.map(job => (
+                              {sortedJobs.filter(j => !selectedJobCategory || j.category.toLowerCase().includes(selectedJobCategory.toLowerCase())).slice(0, 5).map(job => (
                                 <div 
                                   key={job.id} 
                                   onClick={() => openDetail(job)}
-                                  className="bg-white p-4 rounded-2xl border border-slate-100 flex gap-4 items-center cursor-pointer hover:border-navy/20 transition-all"
+                                  className="bg-white p-4 rounded-2xl border border-slate-100 flex gap-4 items-center cursor-pointer hover:border-navy/20 transition-all shadow-sm"
                                 >
-                                  <img src={job.logo} className="w-12 h-12 rounded-xl" referrerPolicy="no-referrer" />
+                                  <img src={job.logo} className="w-12 h-12 rounded-xl object-cover" referrerPolicy="no-referrer" />
                                   <div className="flex-1">
                                     <h4 className="font-bold text-navy text-sm">{job.title}</h4>
                                     <p className="text-slate-400 text-xs">{job.company} • {job.location}</p>
@@ -1832,25 +2597,46 @@ export default function App() {
                             className="h-full bg-yellow"
                           />
                         </div>
-                        <p className="text-xs text-slate-400 mt-3">Lengkapi video intro untuk mencapai 100%!</p>
-                      </div>
-
-                      {/* Video Intro Section */}
-                      <div className="bg-navy p-6 rounded-3xl text-white mb-6 relative overflow-hidden">
-                        <div className="relative z-10">
-                          <h4 className="font-bold text-lg mb-2">Video Introduction</h4>
-                          <p className="text-sm opacity-80 mb-4">Berikan kesan pertama yang kuat dalam 30 detik.</p>
-                          <button 
-                            onClick={() => showToast('Membuka kamera untuk rekam video...')}
-                            className="bg-yellow text-navy px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-yellow/90 transition-colors"
-                          >
-                            <Play className="w-4 h-4 fill-navy" /> Unggah Video
-                          </button>
-                        </div>
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
                       </div>
 
                       <div className="space-y-4">
+                        {user.role === 'applicant' && (
+                          <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+                            <div className="p-4 border-b border-slate-50 flex items-center gap-3">
+                              <div className="p-2 bg-red-50 rounded-lg text-red-600">
+                                <Heart className="w-5 h-5" />
+                              </div>
+                              <span className="font-bold text-navy">Lowongan Disimpan</span>
+                            </div>
+                            <div className="p-4 space-y-4">
+                              {savedJobs.length > 0 ? (
+                                savedJobs.map(jobId => {
+                                  const job = jobs.find(j => j.id === jobId);
+                                  if (!job) return null;
+                                  return (
+                                    <div 
+                                      key={job.id} 
+                                      onClick={() => openDetail(job)}
+                                      className="flex justify-between items-center cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-all"
+                                    >
+                                      <div className="flex items-center gap-3">
+                                        <img src={job.logo} className="w-10 h-10 rounded-lg" referrerPolicy="no-referrer" />
+                                        <div>
+                                          <h5 className="font-bold text-navy text-xs">{job.title}</h5>
+                                          <p className="text-[10px] text-slate-400">{job.company}</p>
+                                        </div>
+                                      </div>
+                                      <ChevronRight className="w-4 h-4 text-slate-300" />
+                                    </div>
+                                  );
+                                })
+                              ) : (
+                                <p className="text-center text-slate-400 text-xs py-4 italic">Belum ada lowongan yang disimpan.</p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
                         <button 
                           onClick={() => setView('edit-profile')}
                           className="w-full p-4 bg-white rounded-2xl border border-slate-100 flex justify-between items-center hover:border-navy/20 transition-all"
@@ -1925,6 +2711,114 @@ export default function App() {
             className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] bg-navy text-white px-6 py-3 rounded-2xl shadow-2xl font-bold text-sm whitespace-nowrap"
           >
             {toast}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Filter Modal */}
+      <AnimatePresence>
+        {isFilterOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-navy/40 backdrop-blur-sm z-[100] flex items-end"
+          >
+            <motion.div 
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              className="w-full bg-white rounded-t-[40px] p-8 pb-12"
+            >
+              <div className="flex items-center gap-4 mb-8">
+                <button onClick={() => setIsFilterOpen(false)} className="p-2 bg-slate-50 rounded-xl text-navy flex items-center gap-1">
+                  <ChevronLeft className="w-5 h-5" />
+                  <span className="text-[10px] font-bold">Kembali</span>
+                </button>
+                <h3 className="text-xl font-bold text-navy text-center flex-1 pr-12">Filter Lanjutan</h3>
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <label className="text-xs font-bold text-slate-400 uppercase mb-3 block">Tipe Pekerjaan</label>
+                  <div className="flex flex-wrap gap-2">
+                    {['Full-time', 'Part-time', 'Freelance', 'Internship'].map(type => (
+                      <button 
+                        key={type} 
+                        onClick={() => setFilters({...filters, type: filters.type === type ? '' : type})}
+                        className={`px-4 py-2 rounded-xl border text-sm font-medium transition-all ${
+                          filters.type === type 
+                            ? 'bg-navy text-white border-navy shadow-md' 
+                            : 'bg-white border-slate-100 text-slate-600 hover:border-navy hover:text-navy'
+                        }`}
+                      >
+                        {type}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-400 uppercase mb-3 block">Rentang Gaji (Juta)</label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <input 
+                      type="number" 
+                      placeholder="Min" 
+                      value={filters.salaryMin}
+                      onChange={(e) => setFilters({...filters, salaryMin: e.target.value})}
+                      className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-navy/5" 
+                    />
+                    <input 
+                      type="number" 
+                      placeholder="Max" 
+                      value={filters.salaryMax}
+                      onChange={(e) => setFilters({...filters, salaryMax: e.target.value})}
+                      className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-navy/5" 
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-400 uppercase mb-3 block">Pengalaman</label>
+                  <div className="flex flex-wrap gap-2">
+                    {['Fresh Graduate', '1-3 Tahun', '3-5 Tahun', '5+ Tahun'].map(exp => (
+                      <button 
+                        key={exp} 
+                        onClick={() => setFilters({...filters, experience: filters.experience === exp ? '' : exp})}
+                        className={`px-4 py-2 rounded-xl border text-sm font-medium transition-all ${
+                          filters.experience === exp 
+                            ? 'bg-navy text-white border-navy shadow-md' 
+                            : 'bg-white border-slate-100 text-slate-600 hover:border-navy hover:text-navy'
+                        }`}
+                      >
+                        {exp}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex gap-3 mt-4">
+                  <button 
+                    onClick={() => {
+                      setFilters({ type: '', experience: '', salaryMin: '', salaryMax: '' });
+                      showToast('Filter direset');
+                    }}
+                    className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-bold"
+                  >
+                    Reset
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setIsFilterOpen(false);
+                      showToast('Filter berhasil diterapkan!');
+                    }}
+                    className="flex-[2] py-4 bg-navy text-white rounded-2xl font-bold shadow-lg shadow-navy/20"
+                  >
+                    Terapkan Filter
+                  </button>
+                </div>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

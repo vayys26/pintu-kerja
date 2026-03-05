@@ -46,6 +46,7 @@ export interface UserProfile {
   role: UserRole;
   location?: string;
   isLoggedIn: boolean;
+  password?: string;
   experience: Experience[];
 }
 
@@ -58,5 +59,5 @@ export interface Application {
   appliedAt: string;
 }
 
-export type ViewState = 'splash' | 'role-selection' | 'applicant-reg' | 'employer-reg' | 'main' | 'detail' | 'post-job' | 'edit-profile' | 'chat' | 'edit-experience';
+export type ViewState = 'splash' | 'login' | 'role-selection' | 'applicant-reg' | 'employer-reg' | 'main' | 'detail' | 'post-job' | 'edit-profile' | 'chat' | 'edit-experience' | 'apply-form' | 'location-connection' | 'courses' | 'my-jobs';
 export type TabState = 'home' | 'explore' | 'applications' | 'profile' | 'employer-dashboard';
